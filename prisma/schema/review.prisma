@@ -1,0 +1,14 @@
+model Review {
+  id             String @id @default(uuid())
+  bookingId      String @unique
+  studentId      String
+  tutorProfileId String
+  rating         Int
+  comment        String?
+
+  booking Booking     @relation(fields: [bookingId], references: [id])
+  student User        @relation(fields: [studentId], references: [id])
+  tutor   TutorProfile @relation(fields: [tutorProfileId], references: [id])
+
+  createdAt DateTime @default(now())
+}
