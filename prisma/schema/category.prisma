@@ -1,8 +1,19 @@
 model Category {
-  id       String  @id @default(uuid())
-  name     String  @unique
-  isActive Boolean @default(true)
+  id       String   @id @default(uuid())
+  name     String   @unique
+  isActive Boolean  @default(true)
 
-  tutors   TutorCategory[]
-  bookings Booking[]
+  bookings       Booking[]
+  tutorCategories TutorCategory[]
+}
+
+model TutorCategory {
+  id             String       @id @default(uuid())
+  tutorProfileId String
+  categoryId     String
+
+  tutor    TutorProfile @relation(fields: [tutorProfileId], references: [id])
+  category Category     @relation(fields: [categoryId], references: [id])
+
+  @@unique([tutorProfileId, categoryId])
 }

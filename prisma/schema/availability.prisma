@@ -1,0 +1,13 @@
+model Availability {
+  id            String       @id @default(uuid())
+  tutorProfileId String
+  dayOfWeek     Int          // 0 = Sunday, 6 = Saturday
+  startTime     String       // "14:00"
+  endTime       String       // "16:00"
+  isBooked      Boolean      @default(false)
+
+  tutor TutorProfile @relation(fields: [tutorProfileId], references: [id])
+  booking Booking?
+
+  createdAt DateTime @default(now())
+}

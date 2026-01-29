@@ -3,15 +3,17 @@ model Booking {
   studentId      String
   tutorProfileId String
   categoryId     String
+  availabilityId String?       @unique
   sessionDate    DateTime
   startTime      String
   endTime        String
   status         BookingStatus @default(CONFIRMED)
 
-  student User         @relation("StudentBookings", fields: [studentId], references: [id])
-  tutor   TutorProfile @relation(fields: [tutorProfileId], references: [id])
-  category Category     @relation(fields: [categoryId], references: [id])
-  review   Review?
+  student      User          @relation("StudentBookings", fields: [studentId], references: [id])
+  tutor        TutorProfile  @relation(fields: [tutorProfileId], references: [id])
+  category     Category      @relation(fields: [categoryId], references: [id])
+  availability Availability? @relation(fields: [availabilityId], references: [id])
+  review       Review?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

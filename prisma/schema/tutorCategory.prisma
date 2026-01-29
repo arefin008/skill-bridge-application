@@ -1,9 +1,0 @@
-model TutorCategory {
-  tutorProfileId String
-  categoryId     String
-
-  tutorProfile TutorProfile @relation(fields: [tutorProfileId], references: [id])
-  category     Category     @relation(fields: [categoryId], references: [id])
-
-  @@id([tutorProfileId, categoryId])
-}
