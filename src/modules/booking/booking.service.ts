@@ -43,6 +43,12 @@ const createBooking = async (data: CreateBookingInput) => {
   return booking;
 };
 
+const getAllBookings = async () => {
+  return prisma.booking.findMany({
+    orderBy: { sessionDate: "desc" },
+  });
+};
+
 const getStudentBookings = async (studentId: string) => {
   return prisma.booking.findMany({
     where: { studentId },
@@ -108,6 +114,7 @@ const cancelBooking = async (bookingId: string, userId: string) => {
 
 export const bookingService = {
   createBooking,
+  getAllBookings,
   getStudentBookings,
   getTutorBookings,
   cancelBooking,

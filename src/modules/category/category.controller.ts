@@ -14,9 +14,13 @@ const createCategory = async (
   }
 };
 
-const getCategories = async (_: Request, res: Response) => {
-  const categories = await categoryService.getAllCategories();
-  res.json(categories);
+const getCategories = async (_: Request, res: Response, next: NextFunction) => {
+  try {
+    const categories = await categoryService.getAllCategories();
+    res.json(categories);
+  } catch (error) {
+    next(error);
+  }
 };
 
 const updateCategory = async (

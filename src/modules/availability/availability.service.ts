@@ -13,8 +13,8 @@ const createAvailability = async (data: CreateAvailabilityInput) => {
     where: {
       tutorProfileId: data.tutorProfileId,
       dayOfWeek: data.dayOfWeek,
-      startTime: { lt: data.endTime },
-      endTime: { gt: data.startTime },
+      startTime: { lt: data.endTime }, // less than endTime
+      endTime: { gt: data.startTime }, // greater than startTime
     },
   });
 

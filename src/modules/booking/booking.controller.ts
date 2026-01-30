@@ -21,6 +21,19 @@ const createBooking = async (
   }
 };
 
+const getAllBookings = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const bookings = await bookingService.getAllBookings();
+    res.json(bookings);
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getMyBookings = async (
   req: Request,
   res: Response,
@@ -58,10 +71,7 @@ const cancelMyBooking = async (
       return res.status(400).json({ message: "Invalid booking ID" });
     }
 
-    const booking = await bookingService.cancelBooking(
-      id,
-      req.user!.id,
-    );
+    const booking = await bookingService.cancelBooking(id, req.user!.id);
 
     res.json({
       message: "Booking cancelled successfully",
@@ -74,6 +84,7 @@ const cancelMyBooking = async (
 
 export const bookingController = {
   createBooking,
+  getAllBookings,
   getMyBookings,
   getTutorSessions,
   cancelMyBooking,

@@ -41,24 +41,6 @@ const createTutorProfile = async (
   }
 };
 
-const getMyTutorProfile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction,
-) => {
-  try {
-    const userId = req.user?.id;
-    if (!userId) return res.status(401).json({ message: "Unauthorized" });
-
-    const profile = await tutorService.getProfileByUserId(userId);
-    if (!profile) return res.status(404).json({ message: "Profile not found" });
-
-    return res.status(200).json({ profile });
-  } catch (error) {
-    next(error);
-  }
-};
-
 const getAllTutors = async (
   req: Request,
   res: Response,
@@ -119,7 +101,6 @@ const updateTutorProfile = async (
 
 export const tutorController = {
   createTutorProfile,
-  getMyTutorProfile,
   updateTutorProfile,
   getAllTutors,
   getTutorById,

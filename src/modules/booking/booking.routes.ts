@@ -5,7 +5,12 @@ import { bookingController } from "./booking.controller";
 const router = express.Router();
 
 // Student
-router.post("/", auth(UserRole.STUDENT), bookingController.createBooking);
+router.post(
+  "/",
+  auth(UserRole.STUDENT, UserRole.ADMIN),
+  bookingController.createBooking,
+);
+router.get("/", auth(UserRole.ADMIN), bookingController.getAllBookings);
 router.get("/me", auth(UserRole.STUDENT), bookingController.getMyBookings);
 router.patch(
   "/:id/cancel",
