@@ -6,6 +6,10 @@ import { notFound } from "./middlewares/notFound";
 import errorHandler from "./middlewares/globalErrorHandler";
 import { tutorRouter } from "./modules/tutor/tutor.routes";
 import { bookingRouter } from "./modules/booking/booking.routes";
+import { categoryRouter } from "./modules/category/category.routes";
+import { availabilityRouter } from "./modules/availability/availability.routes";
+import { reviewRouter } from "./modules/review/review.routes";
+import { authRouter } from "./modules/auth/auth.routes";
 
 const app: Application = express();
 
@@ -16,12 +20,14 @@ app.use(
   }),
 );
 
-app.all("/api/auth/*splat", toNodeHandler(auth));
-
 app.use(express.json());
-app.use("/tutor", tutorRouter);
-app.use("/booking", bookingRouter);
-
+app.use("/api/auth", authRouter);
+app.all("/api/auth/*splat", toNodeHandler(auth));
+app.use("/api/tutors", tutorRouter);
+app.use("/api/bookings", bookingRouter);
+app.use("/api/categories", categoryRouter);
+app.use("/api/reviews", reviewRouter);
+app.use("/api/availability", availabilityRouter);
 app.get("/", (req, res) => {
   res.send("Welcome to the Skill Bridge Application!");
 });

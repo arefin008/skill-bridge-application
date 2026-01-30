@@ -10,7 +10,7 @@ router.post(
   availabilityController.createAvailability,
 );
 router.get(
-  "/me",
+  "/availability",
   auth(UserRole.TUTOR),
   availabilityController.getMyAvailability,
 );
