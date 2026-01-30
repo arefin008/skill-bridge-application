@@ -51,7 +51,7 @@ const auth = (...roles: UserRole[]) => {
         emailVerified: session.user.emailVerified,
       };
 
-      if (!roles.length && !roles.includes(req.user.role as UserRole)) {
+      if (roles.length && !roles.includes(req.user.role as UserRole)) {
         return res.status(403).json({
           success: false,
           message: "You do not have permission to access this resource.", //role not authorized

@@ -10,6 +10,7 @@ import { categoryRouter } from "./modules/category/category.routes";
 import { availabilityRouter } from "./modules/availability/availability.routes";
 import { reviewRouter } from "./modules/review/review.routes";
 import { authRouter } from "./modules/auth/auth.routes";
+import { adminRouter } from "./modules/admin/admin.routes";
 
 const app: Application = express();
 
@@ -28,6 +29,7 @@ app.use("/api/bookings", bookingRouter);
 app.use("/api/categories", categoryRouter);
 app.use("/api/reviews", reviewRouter);
 app.use("/api/availability", availabilityRouter);
+app.use("/api/admin", adminRouter);
 app.get("/", (req, res) => {
   res.send("Welcome to the Skill Bridge Application!");
 });
