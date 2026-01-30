@@ -5,6 +5,7 @@ import cors from "cors";
 import { notFound } from "./middlewares/notFound";
 import errorHandler from "./middlewares/globalErrorHandler";
 import { tutorRouter } from "./modules/tutor/tutor.routes";
+import { bookingRouter } from "./modules/booking/booking.routes";
 
 const app: Application = express();
 
@@ -19,6 +20,7 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 
 app.use(express.json());
 app.use("/tutor", tutorRouter);
+app.use("/booking", bookingRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Skill Bridge Application!");
