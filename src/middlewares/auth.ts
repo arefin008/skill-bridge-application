@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { auth as betterAuth } from "../lib/auth";
+import { prisma } from "../lib/prisma";
 
 export enum UserRole {
   ADMIN = "ADMIN",
@@ -57,6 +58,24 @@ const auth = (...roles: UserRole[]) => {
           message: "You do not have permission to access this resource.", //role not authorized
         });
       }
+
+      // If the user is a tutor, ensure they have a tutor profile
+      // if (req.user.role === UserRole.TUTOR) {
+      //   const profile = await prisma.tutorProfile.findUnique({
+      //     where: { userId: req.user.id },
+      //   });
+
+      //   if (!profile) {
+      //     await prisma.tutorProfile.create({
+      //       data: {
+      //         userId: req.user.id,
+      //         bio: "",
+      //         hourlyRate: 0,
+      //         experience: 0,
+      //       },
+      //     });
+      //   }
+      // }
 
       next();
     } catch (error) {

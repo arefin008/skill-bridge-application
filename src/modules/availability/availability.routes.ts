@@ -9,11 +9,7 @@ router.post(
   auth(UserRole.TUTOR),
   availabilityController.createAvailability,
 );
-router.get(
-  "/availability",
-  auth(UserRole.TUTOR),
-  availabilityController.getMyAvailability,
-);
+router.get("/", auth(UserRole.TUTOR), availabilityController.getMyAvailability);
 router.delete(
   "/:id",
   auth(UserRole.TUTOR),
