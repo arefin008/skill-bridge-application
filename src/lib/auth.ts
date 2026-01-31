@@ -41,20 +41,6 @@ export const auth = betterAuth({
     autoSignIn: false,
     requireEmailVerification: true,
   },
-  // events: {
-  //   async signUp({ user }: { user: any }) {
-  //     if (user.role === "TUTOR") {
-  //       await prisma.tutorProfile.create({
-  //         data: {
-  //           userId: user.id,
-  //           bio: "",
-  //           hourlyRate: 0,
-  //           experience: 0,
-  //         },
-  //       });
-  //     }
-  //   },
-  // },
 
   emailVerification: {
     sendOnSignUp: true,
