@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { tutorService } from "./tutor.service";
+import { TutorFilter, tutorService } from "./tutor.service";
 
 const createTutorProfile = async (
   req: Request,
@@ -47,8 +47,28 @@ const getAllTutors = async (
   next: NextFunction,
 ) => {
   try {
-    const tutors = await tutorService.getAllTutors(req.query);
-    res.json(tutors);
+    // Build filters conditionally
+    const filters: TutorFilter = {};
+
+    if (req.query.subject) {
+      filters.subject = req.query.subject as string;
+    }
+    if (req.query.minRating) {
+      filters.minRating = Number(req.query.minRating);
+    }
+    if (req.query.minPrice) {
+      filters.minPrice = Number(req.query.minPrice);
+    }
+    if (req.query.maxPrice) {
+      filters.maxPrice = Number(req.query.maxPrice);
+    }
+
+    const tutors = await tutorService.getAllTutors(filters);
+
+    return res.status(200).json({
+      success: true,
+      data: tutors,
+    });
   } catch (error) {
     next(error);
   }

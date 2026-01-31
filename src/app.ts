@@ -30,6 +30,7 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/reviews", reviewRouter);
 app.use("/api/availability", availabilityRouter);
 app.use("/api/admin", adminRouter);
+
 app.get("/", (req, res) => {
   res.send("Welcome to the Skill Bridge Application!");
 });
