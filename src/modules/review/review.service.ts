@@ -9,7 +9,6 @@ interface CreateReviewInput {
 }
 
 const createReview = async (data: CreateReviewInput) => {
-  // Validate booking
   const booking = await prisma.booking.findUnique({
     where: { id: data.bookingId },
     include: { tutor: true },
@@ -19,17 +18,14 @@ const createReview = async (data: CreateReviewInput) => {
     throw new Error("Booking not found");
   }
 
-  // Ownership check
   if (booking.studentId !== data.studentId) {
     throw new Error("Unauthorized to review this booking");
   }
 
-  // Booking must be completed
   if (booking.status !== BookingStatus.COMPLETED) {
     throw new Error("You can review only completed sessions");
   }
 
-  // Prevent duplicate review
   const existingReview = await prisma.review.findUnique({
     where: { bookingId: data.bookingId },
   });
@@ -38,7 +34,6 @@ const createReview = async (data: CreateReviewInput) => {
     throw new Error("Review already submitted for this booking");
   }
 
-  // Create review
   const review = await prisma.review.create({
     data: {
       bookingId: data.bookingId,
@@ -49,7 +44,6 @@ const createReview = async (data: CreateReviewInput) => {
     },
   });
 
-  // Update tutor rating
   const stats = await prisma.review.aggregate({
     where: { tutorProfileId: booking.tutorProfileId },
     _avg: { rating: true },

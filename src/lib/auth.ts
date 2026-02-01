@@ -6,7 +6,7 @@ import nodemailer from "nodemailer";
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
-  secure: false, // Use true for port 465, false for port 587
+  secure: false,
   auth: {
     user: process.env.APP_USER,
     pass: process.env.APP_PASSWORD,
@@ -44,9 +44,9 @@ export const auth = betterAuth({
 
   emailVerification: {
     sendOnSignUp: true,
-    autoSignInAfterVerification: true, // Auto sign-in after email verification
+    autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
-      const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`; // Construct verification URL for frontend application
+      const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
       console.log({ user, url, token });
       const info = await transporter.sendMail({
         from: '"Prisma Blog Application" <prisma@gmail.com>',

@@ -12,7 +12,6 @@ interface CreateBookingInput {
 }
 
 const createBooking = async (data: CreateBookingInput) => {
-  // Validate availability
   const availability = await prisma.availability.findUnique({
     where: { id: data.availabilityId },
   });
@@ -25,7 +24,6 @@ const createBooking = async (data: CreateBookingInput) => {
     throw new Error("This availability slot is already booked");
   }
 
-  // Create booking
   const booking = await prisma.booking.create({
     data,
     include: {
@@ -34,7 +32,6 @@ const createBooking = async (data: CreateBookingInput) => {
     },
   });
 
-  // Lock availability
   await prisma.availability.update({
     where: { id: data.availabilityId },
     data: { isBooked: true },
@@ -86,7 +83,6 @@ const cancelBooking = async (bookingId: string, userId: string) => {
 
   if (!booking) throw new Error("Booking not found");
 
-  // Ownership check (student only)
   if (booking.studentId !== userId) {
     throw new Error("Unauthorized to cancel this booking");
   }
@@ -95,13 +91,11 @@ const cancelBooking = async (bookingId: string, userId: string) => {
     throw new Error("Only confirmed bookings can be cancelled");
   }
 
-  // Cancel booking
   const updatedBooking = await prisma.booking.update({
     where: { id: bookingId },
     data: { status: BookingStatus.CANCELLED },
   });
 
-  // Free availability slot
   if (booking.availabilityId) {
     await prisma.availability.update({
       where: { id: booking.availabilityId },

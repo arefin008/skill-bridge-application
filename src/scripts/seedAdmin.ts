@@ -10,7 +10,6 @@ async function seedAdmin() {
       password: process.env.ADMIN_PASSWORD,
     };
 
-    // Check if admin user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: adminData.email },
     });

@@ -47,7 +47,6 @@ const getAllTutors = async (
   next: NextFunction,
 ) => {
   try {
-    // Build filters conditionally
     const filters: TutorFilter = {};
 
     if (req.query.subject) {
@@ -85,7 +84,6 @@ const getTutorById = async (req: Request, res: Response) => {
   res.json(tutor);
 };
 
-// Update current tutor profile
 const updateTutorProfile = async (
   req: Request,
   res: Response,

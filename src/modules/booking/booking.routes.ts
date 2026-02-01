@@ -4,7 +4,6 @@ import { bookingController } from "./booking.controller";
 
 const router = express.Router();
 
-// Student
 router.post(
   "/",
   auth(UserRole.STUDENT, UserRole.ADMIN),
@@ -18,7 +17,6 @@ router.patch(
   bookingController.cancelMyBooking,
 );
 
-// Tutor
 router.get(
   "/tutor/me",
   auth(UserRole.TUTOR),

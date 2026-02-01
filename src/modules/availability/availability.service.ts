@@ -8,13 +8,12 @@ interface CreateAvailabilityInput {
 }
 
 const createAvailability = async (data: CreateAvailabilityInput) => {
-  // Prevent overlapping slots
   const conflict = await prisma.availability.findFirst({
     where: {
       tutorProfileId: data.tutorProfileId,
       dayOfWeek: data.dayOfWeek,
-      startTime: { lt: data.endTime }, // less than endTime
-      endTime: { gt: data.startTime }, // greater than startTime
+      startTime: { lt: data.endTime },
+      endTime: { gt: data.startTime },
     },
   });
 
