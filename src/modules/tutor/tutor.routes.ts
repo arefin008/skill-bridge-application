@@ -7,12 +7,18 @@ const router = express.Router();
 router.post("/", auth(UserRole.TUTOR), tutorController.createTutorProfile);
 
 router.get("/", tutorController.getAllTutors);
-router.get("/:id", tutorController.getTutorById);
+router.get(
+  "/my-profile",
+  auth(UserRole.TUTOR),
+  tutorController.getMyProfile,
+);
 
 router.put(
   "/profile",
   auth(UserRole.TUTOR),
   tutorController.updateTutorProfile,
 );
+
+router.get("/:id", tutorController.getTutorById);
 
 export const tutorRouter: Router = router;

@@ -9,7 +9,7 @@ const createTutorProfile = async (
   try {
     const user = req.user;
     console.log(user);
-    const { bio, hourlyRate, experience } = req.body;
+    const { bio, hourlyRate, experience, categories } = req.body;
     if (!user) {
       return res.status(400).json({
         error: "User information is missing (Unauthorized)",
@@ -30,6 +30,7 @@ const createTutorProfile = async (
       bio,
       hourlyRate,
       experience,
+      categories,
     });
 
     return res.status(201).json({
@@ -61,6 +62,12 @@ const getAllTutors = async (
     if (req.query.maxPrice) {
       filters.maxPrice = Number(req.query.maxPrice);
     }
+    if (req.query.categoryId) {
+      filters.categoryId = req.query.categoryId as string;
+    }
+    if (req.query.search) {
+      filters.search = req.query.search as string;
+    }
 
     const tutors = await tutorService.getAllTutors(filters);
 
@@ -91,10 +98,10 @@ const updateTutorProfile = async (
 ) => {
   try {
     const userId = req.user?.id;
-    const { bio, hourlyRate, experience } = req.body;
+    const { bio, hourlyRate, experience, categories } = req.body;
 
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
-    if (!bio && !hourlyRate && !experience) {
+    if (!bio && !hourlyRate && !experience && !categories) {
       return res
         .status(400)
         .json({ message: "At least one field is required" });
@@ -104,6 +111,7 @@ const updateTutorProfile = async (
       bio,
       hourlyRate,
       experience,
+      categories,
     });
     if (!updatedProfile)
       return res.status(404).json({ message: "Profile not found" });
@@ -117,9 +125,28 @@ const updateTutorProfile = async (
   }
 };
 
+const getMyProfile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+    const profile = await tutorService.getProfileByUserId(userId);
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+
+    res.json(profile);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const tutorController = {
   createTutorProfile,
   updateTutorProfile,
   getAllTutors,
   getTutorById,
+  getMyProfile,
 };

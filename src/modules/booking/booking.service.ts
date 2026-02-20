@@ -43,6 +43,11 @@ const createBooking = async (data: CreateBookingInput) => {
 const getAllBookings = async () => {
   return prisma.booking.findMany({
     orderBy: { sessionDate: "desc" },
+    include: {
+      student: true,
+      tutor: { include: { user: true } },
+      category: true,
+    },
   });
 };
 
@@ -106,10 +111,35 @@ const cancelBooking = async (bookingId: string, userId: string) => {
   return updatedBooking;
 };
 
+const completeBooking = async (bookingId: string, userId: string) => {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { tutor: true },
+  });
+
+  if (!booking) throw new Error("Booking not found");
+
+  if (booking.studentId !== userId && booking.tutor.userId !== userId) {
+    throw new Error("Unauthorized to complete this booking");
+  }
+
+  if (booking.status !== BookingStatus.CONFIRMED) {
+    throw new Error("Only confirmed bookings can be completed");
+  }
+
+  const updatedBooking = await prisma.booking.update({
+    where: { id: bookingId },
+    data: { status: BookingStatus.COMPLETED },
+  });
+
+  return updatedBooking;
+};
+
 export const bookingService = {
   createBooking,
   getAllBookings,
   getStudentBookings,
   getTutorBookings,
   cancelBooking,
+  completeBooking,
 };

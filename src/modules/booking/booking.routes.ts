@@ -23,4 +23,10 @@ router.get(
   bookingController.getTutorSessions,
 );
 
+router.patch(
+  "/:id/complete",
+  auth(UserRole.STUDENT, UserRole.TUTOR),
+  bookingController.completeSession,
+);
+
 export const bookingRouter: Router = router;

@@ -4,13 +4,26 @@ interface TutorProfileInput {
   bio: string;
   hourlyRate: number;
   experience: number;
+  categories?: string[];
 }
 
 const createProfile = async (userId: string, data: TutorProfileInput) => {
   return await prisma.tutorProfile.create({
     data: {
-      ...data,
       userId,
+      bio: data.bio,
+      hourlyRate: data.hourlyRate,
+      experience: data.experience,
+      ...(data.categories && {
+        tutorCategories: {
+          create: data.categories.map((categoryId) => ({
+            category: { connect: { id: categoryId } },
+          })),
+        },
+      }),
+    },
+    include: {
+      tutorCategories: { include: { category: true } },
     },
   });
 };
@@ -29,13 +42,15 @@ const getProfileByUserId = async (userId: string) => {
 
 export interface TutorFilter {
   subject?: string;
+  categoryId?: string;
+  search?: string;
   minRating?: number;
   minPrice?: number;
   maxPrice?: number;
 }
 
 const getAllTutors = async (filters: TutorFilter) => {
-  const { subject, minRating, minPrice, maxPrice } = filters;
+  const { subject, categoryId, search, minRating, minPrice, maxPrice } = filters;
 
   const where: any = {};
 
@@ -50,7 +65,14 @@ const getAllTutors = async (filters: TutorFilter) => {
     where.avgRating = { gte: Number(minRating) };
   }
 
-  if (subject) {
+  // Handle category filtering
+  if (categoryId) {
+    where.tutorCategories = {
+      some: {
+        categoryId,
+      },
+    };
+  } else if (subject) {
     where.tutorCategories = {
       some: {
         category: {
@@ -61,6 +83,32 @@ const getAllTutors = async (filters: TutorFilter) => {
         },
       },
     };
+  }
+
+  // Handle search by tutor name or category
+  if (search) {
+    where.OR = [
+      {
+        user: {
+          name: {
+            contains: search,
+            mode: "insensitive",
+          },
+        },
+      },
+      {
+        tutorCategories: {
+          some: {
+            category: {
+              name: {
+                contains: search,
+                mode: "insensitive",
+              },
+            },
+          },
+        },
+      },
+    ];
   }
 
   const tutors = await prisma.tutorProfile.findMany({
@@ -91,7 +139,10 @@ const getTutorById = async (id: string) => {
   });
 };
 
-const updateProfile = async (userId: string, data: TutorProfileInput) => {
+const updateProfile = async (
+  userId: string,
+  data: Partial<TutorProfileInput> & { categories?: string[] },
+) => {
   const existingProfile = await prisma.tutorProfile.findUnique({
     where: { userId },
   });
@@ -105,6 +156,17 @@ const updateProfile = async (userId: string, data: TutorProfileInput) => {
       hourlyRate: data.hourlyRate ?? existingProfile.hourlyRate,
       experience: data.experience ?? existingProfile.experience,
       updatedAt: new Date(),
+      ...(data.categories && {
+        tutorCategories: {
+          deleteMany: {},
+          create: data.categories.map((categoryId) => ({
+            category: { connect: { id: categoryId } },
+          })),
+        },
+      }),
+    },
+    include: {
+      tutorCategories: { include: { category: true } },
     },
   });
 };

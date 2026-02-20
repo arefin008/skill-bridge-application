@@ -82,10 +82,33 @@ const cancelMyBooking = async (
   }
 };
 
+const completeSession = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const id = req.params.id;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ message: "Invalid booking ID" });
+    }
+
+    const booking = await bookingService.completeBooking(id, req.user!.id);
+
+    res.json({
+      message: "Session marked as complete",
+      booking,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const bookingController = {
   createBooking,
   getAllBookings,
   getMyBookings,
   getTutorSessions,
   cancelMyBooking,
+  completeSession,
 };
