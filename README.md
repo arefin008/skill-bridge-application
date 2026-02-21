@@ -22,7 +22,6 @@ The SkillBridge backend is a high-performance Express & Prisma-based API designe
 The API implements a **Unified Domain Strategy** for authentication, ensuring that session cookies remain valid across frontend and backend origins.
 
 - **Proxy Rewrite Friendly**: Configured to work seamlessly with Next.js rewrites.
-- **Cross-Domain Security**: Strictly enforces `secure: true` and `sameSite: "none"` for production cookies.
 - **Role-Based Access Control**: Hardcoded roles for `ADMIN`, `TUTOR`, and `STUDENT`.
 
 ---
