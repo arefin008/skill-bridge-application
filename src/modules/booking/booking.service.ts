@@ -98,7 +98,10 @@ const cancelBooking = async (bookingId: string, userId: string) => {
 
   const updatedBooking = await prisma.booking.update({
     where: { id: bookingId },
-    data: { status: BookingStatus.CANCELLED },
+    data: { 
+      status: BookingStatus.CANCELLED,
+      availabilityId: null 
+    },
   });
 
   if (booking.availabilityId) {
