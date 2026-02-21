@@ -278,11 +278,16 @@ var auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql"
   }),
-  baseURL: process.env.BETTER_AUTH_URL,
-  trustedOrigins: [process.env.APP_URL],
+  baseURL: process.env.BETTER_AUTH_URL || process.env.API_URL,
+  trustedOrigins: [process.env.APP_URL || process.env.FRONTEND_URL || ""],
   cookies: {
-    sameSite: "none",
-    secure: false
+    paddingToken: {
+      name: "padding-token"
+    }
+  },
+  cookie: {
+    secure: true,
+    sameSite: "none"
   },
   user: {
     additionalFields: {
@@ -1409,7 +1414,7 @@ var adminRouter = router7;
 var app = express6();
 app.use(
   cors({
-    origin: process.env.APP_URL || "http://localhost:3000",
+    origin: process.env.APP_URL,
     credentials: true
   })
 );
