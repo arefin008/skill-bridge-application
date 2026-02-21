@@ -311,7 +311,7 @@ var auth = betterAuth({
       const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
       console.log({ user, url, token });
       const info = await transporter.sendMail({
-        from: '"Prisma Blog Application" <prisma@gmail.com>',
+        from: '"SkillBridge" <no-reply@skillbridge.com>',
         to: user.email,
         subject: "Verify your email address",
         html: `<!DOCTYPE html>
@@ -336,8 +336,8 @@ var auth = betterAuth({
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
       }
       .header {
-        background-color: #4f46e5;
-        padding: 20px;
+        background-color: #0070f3;
+        padding: 40px 20px;
         text-align: center;
         color: #ffffff;
       }
@@ -355,13 +355,15 @@ var auth = betterAuth({
         margin: 30px 0;
       }
       .verify-button {
-        background-color: #4f46e5;
+        background-color: #0070f3;
         color: #ffffff;
-        padding: 14px 28px;
+        padding: 16px 32px;
         text-decoration: none;
         font-size: 16px;
-        border-radius: 6px;
+        font-weight: bold;
+        border-radius: 8px;
         display: inline-block;
+        box-shadow: 0 4px 14px 0 rgba(0, 118, 255, 0.39);
       }
       .verify-button:hover {
         background-color: #4338ca;
@@ -382,7 +384,7 @@ var auth = betterAuth({
   <body>
     <div class="container">
       <div class="header">
-        <h1>Prisma Blog Application</h1>
+        <h1>SkillBridge</h1>
       </div>
 
       <div class="content">
@@ -391,7 +393,7 @@ var auth = betterAuth({
         <p>Hello ${user.name},</p>
 
         <p>
-          Thank you for registering with <strong>Prisma Blog Application</strong>.
+          Thank you for registering with <strong>SkillBridge</strong>.
           Please confirm your email address by clicking the button below:
         </p>
 
@@ -417,11 +419,11 @@ var auth = betterAuth({
           an account, you can safely ignore this email.
         </p>
 
-        <p>Best regards,<br />Prisma Blog Team</p>
+        <p>Best regards,<br />SkillBridge Team</p>
       </div>
 
       <div class="footer">
-        \xA9 2026 Prisma Blog Application. All rights reserved.
+        \xA9 2026 SkillBridge. All rights reserved.
       </div>
     </div>
   </body>
@@ -456,7 +458,7 @@ function notFound(req, res) {
 // src/middlewares/globalErrorHandler.ts
 function errorHandler(err, req, res, next) {
   let statusCode = 500;
-  let errorMessage = "Internal Server Error";
+  let errorMessage = err.message || "Internal Server Error";
   let errorDetails = err;
   if (err instanceof prismaNamespace_exports.PrismaClientValidationError) {
     statusCode = 400;
@@ -585,7 +587,7 @@ var getAllTutors = async (filters) => {
     where,
     include: {
       user: {
-        select: { id: true, name: true, email: true }
+        select: { id: true, name: true, email: true, image: true }
       },
       tutorCategories: { include: { category: true } },
       availability: { where: { isBooked: false } },
