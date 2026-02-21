@@ -8,7 +8,7 @@ function errorHandler(
   next: NextFunction,
 ) {
   let statusCode = 500;
-  let errorMessage = "Internal Server Error";
+  let errorMessage = err.message || "Internal Server Error";
   let errorDetails = err;
 
   if (err instanceof Prisma.PrismaClientValidationError) {

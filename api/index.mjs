@@ -275,7 +275,12 @@ var auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql"
   }),
+  baseURL: process.env.BETTER_AUTH_URL,
   trustedOrigins: [process.env.APP_URL],
+  cookies: {
+    sameSite: "none",
+    secure: false
+  },
   user: {
     additionalFields: {
       role: {
@@ -494,8 +499,20 @@ import express from "express";
 var createProfile = async (userId, data) => {
   return await prisma.tutorProfile.create({
     data: {
-      ...data,
-      userId
+      userId,
+      bio: data.bio,
+      hourlyRate: data.hourlyRate,
+      experience: data.experience,
+      ...data.categories && {
+        tutorCategories: {
+          create: data.categories.map((categoryId) => ({
+            category: { connect: { id: categoryId } }
+          }))
+        }
+      }
+    },
+    include: {
+      tutorCategories: { include: { category: true } }
     }
   });
 };
@@ -511,7 +528,7 @@ var getProfileByUserId = async (userId) => {
   });
 };
 var getAllTutors = async (filters) => {
-  const { subject, minRating, minPrice, maxPrice } = filters;
+  const { subject, categoryId, search, minRating, minPrice, maxPrice } = filters;
   const where = {};
   if (minPrice !== void 0 || maxPrice !== void 0) {
     where.hourlyRate = {};
@@ -522,7 +539,13 @@ var getAllTutors = async (filters) => {
   if (minRating !== void 0) {
     where.avgRating = { gte: Number(minRating) };
   }
-  if (subject) {
+  if (categoryId) {
+    where.tutorCategories = {
+      some: {
+        categoryId
+      }
+    };
+  } else if (subject) {
     where.tutorCategories = {
       some: {
         category: {
@@ -533,6 +556,30 @@ var getAllTutors = async (filters) => {
         }
       }
     };
+  }
+  if (search) {
+    where.OR = [
+      {
+        user: {
+          name: {
+            contains: search,
+            mode: "insensitive"
+          }
+        }
+      },
+      {
+        tutorCategories: {
+          some: {
+            category: {
+              name: {
+                contains: search,
+                mode: "insensitive"
+              }
+            }
+          }
+        }
+      }
+    ];
   }
   const tutors = await prisma.tutorProfile.findMany({
     where,
@@ -570,7 +617,18 @@ var updateProfile = async (userId, data) => {
       bio: data.bio ?? existingProfile.bio,
       hourlyRate: data.hourlyRate ?? existingProfile.hourlyRate,
       experience: data.experience ?? existingProfile.experience,
-      updatedAt: /* @__PURE__ */ new Date()
+      updatedAt: /* @__PURE__ */ new Date(),
+      ...data.categories && {
+        tutorCategories: {
+          deleteMany: {},
+          create: data.categories.map((categoryId) => ({
+            category: { connect: { id: categoryId } }
+          }))
+        }
+      }
+    },
+    include: {
+      tutorCategories: { include: { category: true } }
     }
   });
 };
@@ -587,7 +645,7 @@ var createTutorProfile = async (req, res, next) => {
   try {
     const user = req.user;
     console.log(user);
-    const { bio, hourlyRate, experience } = req.body;
+    const { bio, hourlyRate, experience, categories } = req.body;
     if (!user) {
       return res.status(400).json({
         error: "User information is missing (Unauthorized)"
@@ -605,7 +663,8 @@ var createTutorProfile = async (req, res, next) => {
     const profile = await tutorService.createProfile(user.id, {
       bio,
       hourlyRate,
-      experience
+      experience,
+      categories
     });
     return res.status(201).json({
       message: "Profile created Successufully",
@@ -630,6 +689,12 @@ var getAllTutors2 = async (req, res, next) => {
     if (req.query.maxPrice) {
       filters.maxPrice = Number(req.query.maxPrice);
     }
+    if (req.query.categoryId) {
+      filters.categoryId = req.query.categoryId;
+    }
+    if (req.query.search) {
+      filters.search = req.query.search;
+    }
     const tutors = await tutorService.getAllTutors(filters);
     return res.status(200).json({
       success: true,
@@ -651,15 +716,16 @@ var getTutorById2 = async (req, res) => {
 var updateTutorProfile = async (req, res, next) => {
   try {
     const userId = req.user?.id;
-    const { bio, hourlyRate, experience } = req.body;
+    const { bio, hourlyRate, experience, categories } = req.body;
     if (!userId) return res.status(401).json({ message: "Unauthorized" });
-    if (!bio && !hourlyRate && !experience) {
+    if (!bio && !hourlyRate && !experience && !categories) {
       return res.status(400).json({ message: "At least one field is required" });
     }
     const updatedProfile = await tutorService.updateProfile(userId, {
       bio,
       hourlyRate,
-      experience
+      experience,
+      categories
     });
     if (!updatedProfile)
       return res.status(404).json({ message: "Profile not found" });
@@ -671,11 +737,23 @@ var updateTutorProfile = async (req, res, next) => {
     next(error);
   }
 };
+var getMyProfile = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) return res.status(401).json({ message: "Unauthorized" });
+    const profile = await tutorService.getProfileByUserId(userId);
+    if (!profile) return res.status(404).json({ message: "Profile not found" });
+    res.json(profile);
+  } catch (error) {
+    next(error);
+  }
+};
 var tutorController = {
   createTutorProfile,
   updateTutorProfile,
   getAllTutors: getAllTutors2,
-  getTutorById: getTutorById2
+  getTutorById: getTutorById2,
+  getMyProfile
 };
 
 // src/middlewares/auth.ts
@@ -722,12 +800,17 @@ var auth_default = auth2;
 var router = express.Router();
 router.post("/", auth_default("TUTOR" /* TUTOR */), tutorController.createTutorProfile);
 router.get("/", tutorController.getAllTutors);
-router.get("/:id", tutorController.getTutorById);
+router.get(
+  "/my-profile",
+  auth_default("TUTOR" /* TUTOR */),
+  tutorController.getMyProfile
+);
 router.put(
   "/profile",
   auth_default("TUTOR" /* TUTOR */),
   tutorController.updateTutorProfile
 );
+router.get("/:id", tutorController.getTutorById);
 var tutorRouter = router;
 
 // src/modules/booking/booking.routes.ts
@@ -759,7 +842,12 @@ var createBooking = async (data) => {
 };
 var getAllBookings = async () => {
   return prisma.booking.findMany({
-    orderBy: { sessionDate: "desc" }
+    orderBy: { sessionDate: "desc" },
+    include: {
+      student: true,
+      tutor: { include: { user: true } },
+      category: true
+    }
   });
 };
 var getStudentBookings = async (studentId) => {
@@ -801,7 +889,10 @@ var cancelBooking = async (bookingId, userId) => {
   }
   const updatedBooking = await prisma.booking.update({
     where: { id: bookingId },
-    data: { status: BookingStatus.CANCELLED }
+    data: {
+      status: BookingStatus.CANCELLED,
+      availabilityId: null
+    }
   });
   if (booking.availabilityId) {
     await prisma.availability.update({
@@ -811,12 +902,31 @@ var cancelBooking = async (bookingId, userId) => {
   }
   return updatedBooking;
 };
+var completeBooking = async (bookingId, userId) => {
+  const booking = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: { tutor: true }
+  });
+  if (!booking) throw new Error("Booking not found");
+  if (booking.studentId !== userId && booking.tutor.userId !== userId) {
+    throw new Error("Unauthorized to complete this booking");
+  }
+  if (booking.status !== BookingStatus.CONFIRMED) {
+    throw new Error("Only confirmed bookings can be completed");
+  }
+  const updatedBooking = await prisma.booking.update({
+    where: { id: bookingId },
+    data: { status: BookingStatus.COMPLETED }
+  });
+  return updatedBooking;
+};
 var bookingService = {
   createBooking,
   getAllBookings,
   getStudentBookings,
   getTutorBookings,
-  cancelBooking
+  cancelBooking,
+  completeBooking
 };
 
 // src/modules/booking/booking.controller.ts
@@ -873,12 +983,28 @@ var cancelMyBooking = async (req, res, next) => {
     next(error);
   }
 };
+var completeSession = async (req, res, next) => {
+  try {
+    const id = req.params.id;
+    if (!id || typeof id !== "string") {
+      return res.status(400).json({ message: "Invalid booking ID" });
+    }
+    const booking = await bookingService.completeBooking(id, req.user.id);
+    res.json({
+      message: "Session marked as complete",
+      booking
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 var bookingController = {
   createBooking: createBooking2,
   getAllBookings: getAllBookings2,
   getMyBookings,
   getTutorSessions,
-  cancelMyBooking
+  cancelMyBooking,
+  completeSession
 };
 
 // src/modules/booking/booking.routes.ts
@@ -899,6 +1025,11 @@ router2.get(
   "/tutor/me",
   auth_default("TUTOR" /* TUTOR */),
   bookingController.getTutorSessions
+);
+router2.patch(
+  "/:id/complete",
+  auth_default("STUDENT" /* STUDENT */, "TUTOR" /* TUTOR */),
+  bookingController.completeSession
 );
 var bookingRouter = router2;
 
@@ -1193,12 +1324,25 @@ var authRouter = router6;
 import express5 from "express";
 
 // src/modules/admin/admin.service.ts
-var getAllUsers = async () => {
-  return prisma.user.findMany({
-    orderBy: {
-      createdAt: "desc"
+var getAllUsers = async (page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+  const [users, total] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit
+    }),
+    prisma.user.count()
+  ]);
+  return {
+    users,
+    meta: {
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit)
     }
-  });
+  };
 };
 var updateUserStatus = async (id, status) => {
   return prisma.user.update({
@@ -1214,8 +1358,10 @@ var adminService = {
 // src/modules/admin/admin.controller.ts
 var getAllUsers2 = async (req, res, next) => {
   try {
-    const users = await adminService.getAllUsers();
-    return res.status(200).json({ users });
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const result = await adminService.getAllUsers(page, limit);
+    return res.status(200).json(result);
   } catch (error) {
     next(error);
   }

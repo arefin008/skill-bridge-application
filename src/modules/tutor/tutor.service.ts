@@ -115,7 +115,7 @@ const getAllTutors = async (filters: TutorFilter) => {
     where,
     include: {
       user: {
-        select: { id: true, name: true, email: true },
+        select: { id: true, name: true, email: true, image: true },
       },
       tutorCategories: { include: { category: true } },
       availability: { where: { isBooked: false } },
