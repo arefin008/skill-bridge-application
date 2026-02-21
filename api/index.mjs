@@ -256,7 +256,10 @@ globalThis["__dirname"] = path.dirname(fileURLToPath(import.meta.url));
 var PrismaClient = getPrismaClientClass();
 
 // src/lib/prisma.ts
-var connectionString = `${process.env.DATABASE_URL}`;
+var connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL is not set in environment variables");
+}
 var adapter = new PrismaPg({ connectionString });
 var prisma = new PrismaClient({ adapter });
 

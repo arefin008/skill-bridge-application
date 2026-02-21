@@ -46,6 +46,11 @@ export const auth = betterAuth({
     autoSignIn: false,
     requireEmailVerification: true,
   },
+  cookie: {
+    name: "session",
+    secure: true, // required for SameSite=None
+    sameSite: "none", // allow cross-site cookies
+  },
 
   emailVerification: {
     sendOnSignUp: true,
