@@ -32,6 +32,20 @@ const createProfile = async (userId: string, data: TutorProfileInput) => {
   });
 };
 
+const publicReviewInclude = {
+  where: { isHidden: false },
+  orderBy: { createdAt: "desc" as const },
+  include: {
+    student: {
+      select: {
+        id: true,
+        name: true,
+        image: true,
+      },
+    },
+  },
+};
+
 const getProfileByUserId = async (userId: string) => {
   return await prisma.tutorProfile.findUnique({
     where: { userId },
@@ -39,7 +53,7 @@ const getProfileByUserId = async (userId: string) => {
       user: true,
       tutorCategories: { include: { category: true } },
       availability: true,
-      reviews: true,
+      reviews: publicReviewInclude,
     },
   });
 };
@@ -140,7 +154,7 @@ const getAllTutors = async (filters: TutorFilter) => {
         },
         tutorCategories: { include: { category: true } },
         availability: { where: { isBooked: false } },
-        reviews: true,
+        reviews: publicReviewInclude,
       },
       orderBy: { [sortBy]: sortOrder },
       skip,
@@ -169,7 +183,7 @@ const getTutorById = async (id: string) => {
       user: true,
       tutorCategories: { include: { category: true } },
       availability: true,
-      reviews: true,
+      reviews: publicReviewInclude,
     },
   });
 };
