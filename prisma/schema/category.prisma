@@ -17,3 +17,136 @@ model TutorCategory {
 
   @@unique([tutorProfileId, categoryId])
 }
+
+model Report {
+  id           String       @id @default(uuid())
+  reporterId   String
+  targetType   ReportTargetType
+  targetId     String
+  reason       String
+  details      String?
+  status       ReportStatus  @default(PENDING)
+  moderatorId  String?
+  decisionNote String?
+
+  reporter     User          @relation("ReportsCreated", fields: [reporterId], references: [id])
+  moderator    User?         @relation("ReportsModerated", fields: [moderatorId], references: [id])
+  review       Review?       @relation("ReviewReports", fields: [reviewId], references: [id])
+  reviewId     String?
+  tutorProfile TutorProfile? @relation("TutorProfileReports", fields: [tutorProfileId], references: [id])
+  tutorProfileId String?
+  moderationActions ModerationAction[]
+
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([targetType, targetId])
+}
+
+model ModerationAction {
+  id            String            @id @default(uuid())
+  reportId       String
+  moderatorId    String
+  actionType     ModerationActionType
+  note           String?
+  reviewId       String?
+  tutorProfileId String?
+
+  report         Report           @relation(fields: [reportId], references: [id])
+  moderator      User             @relation("ModerationActionsTaken", fields: [moderatorId], references: [id])
+  review         Review?          @relation("ReviewModerationActions", fields: [reviewId], references: [id])
+  tutorProfile   TutorProfile?    @relation("TutorProfileModerationActions", fields: [tutorProfileId], references: [id])
+
+  createdAt      DateTime         @default(now())
+}
+
+model SupportTicket {
+  id             String              @id @default(uuid())
+  userId         String
+  bookingId      String?
+  assignedToId   String?
+  subject        String
+  message        String
+  type           SupportTicketType
+  status         SupportTicketStatus @default(OPEN)
+  priority       TicketPriority      @default(MEDIUM)
+  resolutionNote String?
+
+  user           User                @relation("SupportTicketsCreated", fields: [userId], references: [id])
+  booking        Booking?            @relation(fields: [bookingId], references: [id])
+  assignedTo     User?               @relation("SupportTicketsAssigned", fields: [assignedToId], references: [id])
+
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+}
+
+model ContactRequest {
+  id             String               @id @default(uuid())
+  userId         String?
+  handledById    String?
+  name           String
+  email          String
+  subject        String
+  message        String
+  status         ContactRequestStatus @default(OPEN)
+  responseNote   String?
+
+  user           User?                @relation("ContactRequestsCreated", fields: [userId], references: [id])
+  handledBy      User?                @relation("ContactRequestsHandled", fields: [handledById], references: [id])
+
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+}
+
+enum ReportTargetType {
+  REVIEW
+  TUTOR_PROFILE
+}
+
+enum ReportStatus {
+  PENDING
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum ModerationStatus {
+  PENDING
+  APPROVED
+  HIDDEN
+  FLAGGED
+}
+
+enum ModerationActionType {
+  APPROVE_REVIEW
+  HIDE_REVIEW
+  FLAG_TUTOR_PROFILE
+  CLEAR_TUTOR_PROFILE
+}
+
+enum SupportTicketType {
+  GENERAL
+  BOOKING_ISSUE
+  ACCOUNT_HELP
+  CANCELLATION
+  REFUND
+}
+
+enum SupportTicketStatus {
+  OPEN
+  PENDING
+  RESOLVED
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum ContactRequestStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+}

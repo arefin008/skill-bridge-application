@@ -4,7 +4,15 @@ import auth, { UserRole } from "../../middlewares/auth";
 
 const router = express.Router();
 
+router.get("/stats", auth(UserRole.ADMIN), adminController.getPlatformStats);
 router.get("/users", auth(UserRole.ADMIN), adminController.getAllUsers);
+router.get("/tutors", auth(UserRole.ADMIN), adminController.getAllTutors);
+router.post("/staff", auth(UserRole.ADMIN), adminController.createStaffUser);
+router.patch(
+  "/tutors/:id/verify",
+  auth(UserRole.ADMIN),
+  adminController.updateTutorVerification,
+);
 
 router.patch(
   "/users/:id",

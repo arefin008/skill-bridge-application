@@ -41,8 +41,9 @@ function errorHandler(
 
   res.status(statusCode);
   res.json({
+    success: false,
     message: errorMessage,
-    error: errorDetails,
+    ...(process.env.NODE_ENV !== "production" ? { error: errorDetails } : {}),
   });
 }
 

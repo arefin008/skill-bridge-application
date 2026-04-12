@@ -11,12 +11,27 @@ import { availabilityRouter } from "./modules/availability/availability.routes";
 import { reviewRouter } from "./modules/review/review.routes";
 import { authRouter } from "./modules/auth/auth.routes";
 import { adminRouter } from "./modules/admin/admin.routes";
+import { reportRouter } from "./modules/report/report.routes";
+import { supportRouter } from "./modules/support/support.routes";
+import { userRouter } from "./modules/user/user.routes";
+import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 
 const app: Application = express();
+const allowedOrigins = [
+  process.env.APP_URL,
+  "http://localhost:3000",
+  "http://localhost:3001",
+].filter(Boolean);
 
 app.use(
   cors({
-    origin: process.env.APP_URL,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("CORS origin not allowed"));
+    },
     credentials: true,
   }),
 );
@@ -32,6 +47,10 @@ app.use("/api/categories", categoryRouter);
 app.use("/api/reviews", reviewRouter);
 app.use("/api/availability", availabilityRouter);
 app.use("/api/admin", adminRouter);
+app.use("/api/users", userRouter);
+app.use("/api/reports", reportRouter);
+app.use("/api/support", supportRouter);
+app.use("/api/dashboard", dashboardRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Skill Bridge Application!");

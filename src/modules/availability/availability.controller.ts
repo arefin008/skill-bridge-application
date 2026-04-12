@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../../lib/prisma";
 import { availabilityService } from "./availability.service";
+import { sendSuccess } from "../../utils/apiResponse";
 
 const createAvailability = async (
   req: Request,
@@ -19,7 +20,7 @@ const createAvailability = async (
       ...req.body,
     });
 
-    res.status(201).json(slot);
+    res.status(201).json(sendSuccess(slot, "Availability created successfully"));
   } catch (error) {
     next(error);
   }
@@ -38,7 +39,7 @@ const getMyAvailability = async (
     if (!tutor) throw new Error("Tutor profile not found");
 
     const slots = await availabilityService.getTutorAvailability(tutor.id);
-    res.json(slots);
+    res.json(sendSuccess(slots, "Availability fetched successfully"));
   } catch (error) {
     next(error);
   }
@@ -60,7 +61,7 @@ const deleteAvailability = async (
       req.params.id as string,
       tutor.id,
     );
-    res.json({ message: "Availability removed", slot });
+    res.json(sendSuccess(slot, "Availability removed"));
   } catch (error) {
     next(error);
   }

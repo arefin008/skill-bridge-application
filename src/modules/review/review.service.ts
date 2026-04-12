@@ -61,6 +61,42 @@ const createReview = async (data: CreateReviewInput) => {
   return review;
 };
 
+const getMyReviews = async (studentId: string) => {
+  return prisma.review.findMany({
+    where: { studentId },
+    orderBy: { createdAt: "desc" },
+    include: {
+      booking: true,
+      tutor: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
+};
+
+const getTutorReviews = async (userId: string) => {
+  const tutorProfile = await prisma.tutorProfile.findUnique({
+    where: { userId },
+  });
+
+  if (!tutorProfile) {
+    throw new Error("Tutor profile not found");
+  }
+
+  return prisma.review.findMany({
+    where: { tutorProfileId: tutorProfile.id },
+    orderBy: { createdAt: "desc" },
+    include: {
+      student: true,
+      booking: true,
+    },
+  });
+};
+
 export const reviewService = {
   createReview,
+  getMyReviews,
+  getTutorReviews,
 };

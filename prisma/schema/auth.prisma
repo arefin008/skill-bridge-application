@@ -6,19 +6,40 @@ model User {
   image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  role          String?   @default("USER")
+  role          UserRole  @default(STUDENT)
   phone         String?
-  status        String?   @default("ACTIVE")
+  status        UserStatus @default(ACTIVE)
   sessions      Session[]
   accounts      Account[]
   
-    // SkillBridge relations
+  // SkillBridge relations
   tutorProfile    TutorProfile?
   studentBookings Booking[] @relation("StudentBookings")
   reviews         Review[]
+  reportedContent Report[]  @relation("ReportsCreated")
+  assignedReports Report[]  @relation("ReportsModerated")
+  moderationActions ModerationAction[] @relation("ModerationActionsTaken")
+  supportTickets SupportTicket[] @relation("SupportTicketsCreated")
+  assignedTickets SupportTicket[] @relation("SupportTicketsAssigned")
+  contactRequests ContactRequest[] @relation("ContactRequestsCreated")
+  handledContacts ContactRequest[] @relation("ContactRequestsHandled")
   
   @@unique([email])
   @@map("user")
+}
+
+enum UserRole {
+  STUDENT
+  TUTOR
+  ADMIN
+  MODERATOR
+  SUPPORT_MANAGER
+}
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  SUSPENDED
 }
 
 model Session {

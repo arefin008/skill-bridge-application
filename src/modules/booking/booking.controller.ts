@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { bookingService } from "./booking.service";
+import { sendSuccess } from "../../utils/apiResponse";
 
 const createBooking = async (
   req: Request,
@@ -12,10 +13,9 @@ const createBooking = async (
       studentId: req.user!.id,
     });
 
-    res.status(201).json({
-      message: "Booking created successfully",
-      booking,
-    });
+    res
+      .status(201)
+      .json(sendSuccess(booking, "Booking created successfully"));
   } catch (error) {
     next(error);
   }
@@ -28,7 +28,7 @@ const getAllBookings = async (
 ) => {
   try {
     const bookings = await bookingService.getAllBookings();
-    res.json(bookings);
+    res.json(sendSuccess(bookings, "Bookings fetched successfully"));
   } catch (error) {
     next(error);
   }
@@ -41,7 +41,7 @@ const getMyBookings = async (
 ) => {
   try {
     const bookings = await bookingService.getStudentBookings(req.user!.id);
-    res.json(bookings);
+    res.json(sendSuccess(bookings, "My bookings fetched successfully"));
   } catch (error) {
     next(error);
   }
@@ -54,7 +54,7 @@ const getTutorSessions = async (
 ) => {
   try {
     const bookings = await bookingService.getTutorBookings(req.user!.id);
-    res.json(bookings);
+    res.json(sendSuccess(bookings, "Tutor sessions fetched successfully"));
   } catch (error) {
     next(error);
   }
@@ -73,10 +73,7 @@ const cancelMyBooking = async (
 
     const booking = await bookingService.cancelBooking(id, req.user!.id);
 
-    res.json({
-      message: "Booking cancelled successfully",
-      booking,
-    });
+    res.json(sendSuccess(booking, "Booking cancelled successfully"));
   } catch (error) {
     next(error);
   }
@@ -95,10 +92,7 @@ const completeSession = async (
 
     const booking = await bookingService.completeBooking(id, req.user!.id);
 
-    res.json({
-      message: "Session marked as complete",
-      booking,
-    });
+    res.json(sendSuccess(booking, "Session marked as complete"));
   } catch (error) {
     next(error);
   }

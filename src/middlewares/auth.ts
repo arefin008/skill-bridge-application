@@ -1,11 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { auth as betterAuth } from "../lib/auth";
-
-export enum UserRole {
-  ADMIN = "ADMIN",
-  TUTOR = "TUTOR",
-  STUDENT = "STUDENT",
-}
+import { UserRole, UserStatus } from "../constants/roles";
 
 declare global {
   namespace Express {
@@ -15,6 +10,7 @@ declare global {
         email: string;
         name: string;
         role: UserRole;
+        status: UserStatus;
         emailVerified: boolean;
       };
     }
@@ -47,8 +43,16 @@ const auth = (...roles: UserRole[]) => {
         email: session.user.email,
         name: session.user.name,
         role: session.user.role as UserRole,
+        status: (session.user.status as UserStatus) || UserStatus.ACTIVE,
         emailVerified: session.user.emailVerified,
       };
+
+      if (req.user.status !== UserStatus.ACTIVE) {
+        return res.status(403).json({
+          success: false,
+          message: "Your account is not active.",
+        });
+      }
 
       if (roles.length && !roles.includes(req.user.role as UserRole)) {
         return res.status(403).json({
@@ -65,3 +69,4 @@ const auth = (...roles: UserRole[]) => {
 };
 
 export default auth;
+export { UserRole, UserStatus };

@@ -3,6 +3,9 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import nodemailer from "nodemailer";
 
+const appUrl = process.env.APP_URL || "http://localhost:3000";
+const isProduction = process.env.NODE_ENV === "production";
+
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
@@ -17,16 +20,16 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  baseURL: `${process.env.APP_URL}/api/auth`,
-  trustedOrigins: [process.env.APP_URL || ""],
+  baseURL: `${appUrl}/api/auth`,
+  trustedOrigins: [appUrl, "http://localhost:3000", "http://localhost:3001"],
   cookies: {
     paddingToken: {
       name: "padding-token",
     },
   },
   cookie: {
-    secure: true,
-    sameSite: "none",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
   },
   user: {
     additionalFields: {
@@ -55,8 +58,7 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url, token }, request) => {
-      const verificationUrl = `${process.env.APP_URL}/verify-email?token=${token}`;
-      console.log({ user, url, token });
+      const verificationUrl = `${appUrl}/verify-email?token=${token}`;
       const info = await transporter.sendMail({
         from: '"SkillBridge" <no-reply@skillbridge.com>',
         to: user.email,
@@ -178,7 +180,7 @@ export const auth = betterAuth({
 `,
       });
 
-      console.log("Message sent:", info.messageId);
+      console.log("Verification email sent:", info.messageId);
     },
   },
   socialProviders: {
