@@ -165,6 +165,19 @@ Mount path: `/api/reviews`
   Auth: `TUTOR`
   Controller: `reviewController.getTutorReviews`
 
+## Folder: `src/modules/ai`
+
+Router file: `src/modules/ai/ai.routes.ts`
+Mount path: `/api/ai`
+
+- `POST /api/ai/chat`
+  Auth: Public
+  Controller: `aiController.chat`
+
+- `POST /api/ai/sentiment`
+  Auth: Public
+  Controller: `aiController.classifyReviewSentiment`
+
 ## Folder: `src/modules/report`
 
 Router file: `src/modules/report/report.routes.ts`
@@ -255,6 +268,14 @@ Mount path: `/api/tutors`
 - `PUT /api/tutors/profile`
   Auth: `TUTOR`
   Controller: `tutorController.updateTutorProfile`
+
+- `GET /api/tutors/recommendations`
+  Auth: Public, with optional session-based personalization
+  Controller: `aiController.getRecommendations`
+
+- `GET /api/tutors/:id/review-insights`
+  Auth: Public
+  Controller: `aiController.getReviewInsights`
 
 - `GET /api/tutors/:id`
   Auth: Public

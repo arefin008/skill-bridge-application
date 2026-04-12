@@ -42,9 +42,12 @@ APP_USER="your_email"
 APP_PASSWORD="your_app_password"
 GOOGLE_CLIENT_ID="your_google_client_id"
 GOOGLE_CLIENT_SECRET="your_google_client_secret"
+HF_API_KEY="your_huggingface_api_key"
 ```
 
 Use `sslmode=verify-full` for hosted PostgreSQL URLs so `pg` does not fall back to the deprecated `sslmode=require` alias behavior.
+
+`HF_API_KEY` stays server-side and is used for review sentiment analysis. If it is missing or the Hugging Face inference API times out, the backend falls back to a lightweight local sentiment heuristic so the AI review insights UI still works.
 
 ## Route Reference
 

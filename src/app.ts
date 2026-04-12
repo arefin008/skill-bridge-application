@@ -15,6 +15,7 @@ import { reportRouter } from "./modules/report/report.routes";
 import { supportRouter } from "./modules/support/support.routes";
 import { userRouter } from "./modules/user/user.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
+import { aiRouter } from "./modules/ai/ai.routes";
 
 const app: Application = express();
 const allowedOrigins = [
@@ -51,6 +52,7 @@ app.use("/api/users", userRouter);
 app.use("/api/reports", reportRouter);
 app.use("/api/support", supportRouter);
 app.use("/api/dashboard", dashboardRouter);
+app.use("/api/ai", aiRouter);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the Skill Bridge Application!");
